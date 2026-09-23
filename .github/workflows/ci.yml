@@ -1,0 +1,52 @@
+# Platform-owned. Every app repo has this same file; the real logic lives in the
+# platform's reusable workflows (public repo platform-workflows, published from the
+# platform repo) so an app author cannot weaken the gate.
+#
+#   quality-gate: ruff, pytest with coverage floor, dependency audit, AI security
+#                 review, container build, per-PR preview deploy          (QUA-2, QUA-3)
+#   deploy:       on merge to main, deploy via GitHub OIDC -> platform role  (SEC-9)
+name: ci
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  quality-gate:
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    uses: __GITHUB_ORG__/platform-workflows/.github/workflows/quality-gate.yml@main
+    with:
+      cluster: __PLATFORM_PROJECT__
+      app: __APP_NAME__
+      aws_region: __AWS_REGION__
+      deploy_role_arn: __DEPLOY_ROLE_ARN__
+      ecr_repository: __ECR_REPOSITORY__
+      preview_service: __APP_NAME__-preview
+      apps_domain: __APPS_DOMAIN__
+
+  preview-cleanup:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    uses: __GITHUB_ORG__/platform-workflows/.github/workflows/preview-cleanup.yml@main
+    with:
+      cluster: __PLATFORM_PROJECT__
+      aws_region: __AWS_REGION__
+      deploy_role_arn: __DEPLOY_ROLE_ARN__
+      preview_service: __APP_NAME__-preview
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    uses: __GITHUB_ORG__/platform-workflows/.github/workflows/deploy.yml@main
+    with:
+      cluster: __PLATFORM_PROJECT__
+      app: __APP_NAME__
+      aws_region: __AWS_REGION__
+      deploy_role_arn: __DEPLOY_ROLE_ARN__
+      ecr_repository: __ECR_REPOSITORY__
+      service: __APP_NAME__
+      preview_service: __APP_NAME__-preview

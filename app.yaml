@@ -1,0 +1,16 @@
+# App manifest. Platform-owned: produced by the /new-app intake, changed only via the platform team.
+# The scaffolder registers this in platform/catalog/apps.yaml and the app-service Terraform module
+# reads it to size the service, grant data scopes, and configure the SSO group rule.
+name: __APP_NAME__
+title: __APP_TITLE__
+purpose: __APP_PURPOSE__
+owner:
+  email: __OWNER_EMAIL__
+  team: __OWNER_TEAM__
+users:
+  groups: [__USER_GROUPS__]
+data_scopes: [__DATA_SCOPES__]
+sensitivity: __SENSITIVITY__
+size: small
+created: __CREATED__
+template_version: 0.1.0
