@@ -1,11 +1,15 @@
-"""Routes. Full pages render a template; HTMX requests get a partial (templates/_*.html)."""
+"""Routes. Full pages render a template; HTMX requests get a partial (templates/_*.html).
+
+This is the paved-road starter: a working, signed-in, data-connected page with nothing
+specific on it yet. Describe to the assistant what the tool should show and it will add
+routes here, templates under templates/, and tests under tests/.
+"""
 
 from __future__ import annotations
 
-from datetime import date
 from pathlib import Path
 
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -22,8 +26,6 @@ templates = Jinja2Templates(directory=HERE / "templates")
 client: data.DataClient = data.build_client(
     settings.data_api_url, settings.fixtures_dir, settings.name
 )
-
-WINDOWS = (30, 60, 90, 180)
 
 
 def current_identity(request: Request) -> Identity:
@@ -84,58 +86,25 @@ async def enforce_groups(request: Request, call_next):
     return await call_next(request)
 
 
-def _window(value: int | None) -> int:
-    return value if value in WINDOWS else 90
-
-
-def _context(request: Request, within: int, team: str | None) -> dict:
-    user = current_caller(request)
-    today = date.today()
-    rows = data.renewals(client, user, today=today, within_days=within, team=team or None)
-    return {
-        "request": request,
-        "title": settings.title,
-        "user": user.email,
-        "today": today,
-        "within": within,
-        "windows": WINDOWS,
-        "team": team or "",
-        "teams": data.teams(client, user),
-        "rows": rows,
-        "attention": sum(1 for r in rows if r.tags),
-    }
-
-
 @app.get("/healthz")
 def healthz() -> JSONResponse:
     return JSONResponse({"status": "ok", "app": settings.name})
 
 
 @app.get("/", response_class=HTMLResponse)
-def index(request: Request, within: int = 90, team: str = "") -> HTMLResponse:
+def index(request: Request) -> HTMLResponse:
+    """The starter page: who you are and what this tool can see. Replace with the tool."""
+    caller = current_caller(request)
     return templates.TemplateResponse(
-        request, "index.html", _context(request, _window(within), team)
-    )
-
-
-@app.get("/contracts", response_class=HTMLResponse)
-def contracts_partial(request: Request, within: int = 90, team: str = "") -> HTMLResponse:
-    return templates.TemplateResponse(
-        request, "_contracts.html", _context(request, _window(within), team)
-    )
-
-
-@app.post("/contracts/{contract_id}/flag", response_class=HTMLResponse)
-def toggle_flag(
-    request: Request,
-    contract_id: str,
-    flagged: bool = Form(...),
-    within: int = Form(90),
-    team: str = Form(""),
-) -> HTMLResponse:
-    client.set_flag(current_caller(request), contract_id, flagged)
-    return templates.TemplateResponse(
-        request, "_contracts.html", _context(request, _window(within), team)
+        request,
+        "index.html",
+        {
+            "request": request,
+            "title": settings.title,
+            "user": caller.email,
+            "vendors": len(client.vendors(caller)),
+            "contracts": len(client.contracts(caller)),
+        },
     )
 
 

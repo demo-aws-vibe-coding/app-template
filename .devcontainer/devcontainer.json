@@ -15,11 +15,11 @@
   "mounts": [
     "source=governed-vibe_claude-config,target=/home/vscode/.claude,type=volume",
     "source=governed-vibe_audit-log,target=/var/log/claude-governance,type=volume",
-    "source=governed-vibe_aws-sso,target=/home/vscode/.aws,type=volume",
-    "source=governed-vibe_gh-config,target=/home/vscode/.config/gh,type=volume"
+    "source=governed-vibe_aws-sso,target=/home/vscode/.aws,type=volume"
   ],
   "containerEnv": {
     "CLAUDE_CONFIG_DIR": "/home/vscode/.claude",
+    "PLATFORM_GITHUB_BROKER": "http://github-broker:8080",
     "GOVERNANCE_USER": "${localEnv:GOVERNANCE_USER:citizen.dev@demo.local}",
     "OTEL_RESOURCE_ATTRIBUTES": "deployment.environment=governed-demo,platform.name=paved-road,user.email=${localEnv:GOVERNANCE_USER:citizen.dev@demo.local}"
   },

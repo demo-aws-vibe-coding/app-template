@@ -1,27 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="controls">
-  <form id="filters" hx-get="/contracts" hx-target="#contracts" hx-trigger="change" hx-push-url="false">
-    <label>Renewing in the next
-      <select name="within">
-        {% for w in windows %}
-        <option value="{{ w }}" {% if w == within %}selected{% endif %}>{{ w }} days</option>
-        {% endfor %}
-      </select>
-    </label>
-    <label>Team
-      <select name="team">
-        <option value="" {% if not team %}selected{% endif %}>All teams</option>
-        {% for t in teams %}
-        <option value="{{ t }}" {% if t == team %}selected{% endif %}>{{ t }}</option>
-        {% endfor %}
-      </select>
-    </label>
-    <span class="asof">As of {{ today.isoformat() }}</span>
-  </form>
-</section>
-
-<section id="contracts">
-  {% include "_contracts.html" %}
-</section>
+<section class="controls"><h2 style="margin:0">{{ title }}</h2></section>
+<div class="empty" style="text-align:left; margin-top:12px">
+  <p><strong>This tool is ready to be built.</strong> It is signed in, connected to the platform data API, and deployable. Nothing specific is on this page yet.</p>
+  <p>Right now it can see <strong>{{ vendors }}</strong> vendors and <strong>{{ contracts }}</strong> contracts on behalf of <strong>{{ user }}</strong>. <a href="/whoami">See exactly what it may access.</a></p>
+  <p class="muted">Tell the assistant what you want here: a list, a filter, a flag, a summary. It will add the page, a test, and open a pull request for review.</p>
+</div>
 {% endblock %}
